@@ -24,9 +24,23 @@ export default function App() {
     };
 
     useEffect(() => {
-        if (queryString) {
-            getImages();
+        if (!queryString) {
+            return;
         }
+        const getImages = async () => {
+            try {
+                setIsLoading(true);
+                const { hits } = await fetchImages(queryString, page);
+                setImages(prevImages => [...prevImages, ...hits]);
+            } catch (error) {
+                setError(error.message);
+                toast.error(`Fetch error: ${error}`);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        getImages();
     }, [queryString, page]);
 
     useEffect(() => {
@@ -38,19 +52,6 @@ export default function App() {
             });
         }
     });
-
-    const getImages = async () => {
-        try {
-            setIsLoading(true);
-            const { hits } = await fetchImages(queryString, page);
-            setImages(prevImages => [...prevImages, ...hits]);
-        } catch (error) {
-            setError(error.message);
-            toast.error(`Fetch error: ${error}`);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const handleImageClick = imageLink => {
         setImageForModal(imageLink);
